@@ -1,7 +1,7 @@
 import { GROUP_TYPES } from '../../lib/labels.js'
 
 // The kinds of mains lines a board can switch, in the order they go onto the relays.
-export const LINE_TYPES = ['lights', 'fans', 'mixed', 'load']
+export const LINE_TYPES = ['lights', 'fans', 'mixed', 'ac', 'load']
 
 export function countLines(groups) {
   const counts = Object.fromEntries(LINE_TYPES.map((t) => [t, 0]))
@@ -31,10 +31,12 @@ export function planLines(counts, roomGroups, names = {}) {
   return lines
 }
 
-// Smallest relay board for this ESP that has enough relays, tested ones first.
-export function pickBoard(profiles, espModel, needed) {
+// Smallest relay board for this ESP that has enough relays, tested ones first. ACs and TV points
+// want the 30 A board, so that comes first when they are the only lines.
+export function pickBoard(profiles, espModel, needed, heavyOnly = false) {
   const fits = profiles.filter((p) => p.espModel === espModel && p.channels >= needed)
-  fits.sort((a, b) => Number(b.verified) - Number(a.verified) || a.channels - b.channels)
+  const heavy = (p) => Number(heavyOnly && (p.contactRatingA ?? 0) >= 30)
+  fits.sort((a, b) => heavy(b) - heavy(a) || Number(b.verified) - Number(a.verified) || a.channels - b.channels)
   return fits[0] ?? null
 }
 
@@ -43,7 +45,8 @@ export const maxRelays = (profiles, espModel) => Math.max(0, ...profiles.filter(
 // Room, line counts and relay board → which relay switches what. Returns { profile, channels }.
 export function assignRelays(form, profiles, roomGroups) {
   const lines = planLines(form.counts, roomGroups, form.names)
-  const profile = form.profileTouched ? profiles.find((p) => p._id === form.profile) : pickBoard(profiles, form.espModel, lines.length)
+  const heavyOnly = lines.length > 0 && lines.every((l) => l.type === 'ac' || l.type === 'load')
+  const profile = form.profileTouched ? profiles.find((p) => p._id === form.profile) : pickBoard(profiles, form.espModel, lines.length, heavyOnly)
   const channels = Object.fromEntries(Array.from({ length: profile?.channels ?? 0 }, (_, i) => [i + 1, lines[i]?.id ?? '']))
   return { profile: profile?._id ?? '', channels }
 }

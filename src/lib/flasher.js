@@ -17,7 +17,10 @@ const CHIP_BY_MODEL = { esp32: 'ESP32', esp8266: 'ESP8266' }
 const CONNECT_TIMEOUT_MS = 40000
 
 // Ask the user to pick the board's port, put the chip in upload mode and identify it.
-// manual: the user already put the board in upload mode (hold BOOT/FLASH, tap EN/RST), so no automatic reset.
+// manual: the user holds BOOT/FLASH down while this restarts the board, for boards whose automatic upload mode
+// does not work (seen on a NodeMCU with CH340 on macOS: the restart line works, the BOOT line never reaches GPIO0).
+// The restart still comes from here: opening the port can itself restart the board, so a board put in upload
+// mode before connecting may already have left it.
 // Never hangs: after CONNECT_TIMEOUT_MS the port is released so the user can try again.
 export async function connectBoard(onLog = () => {}, { manual = false, port: chosen } = {}) {
   const port = chosen ?? (await navigator.serial.requestPort())
@@ -36,16 +39,17 @@ export async function connectBoard(onLog = () => {}, { manual = false, port: cho
     }),
   }
   const loader = new ESPLoader({ transport, baudrate: BAUD, romBaudrate: BAUD, terminal, resetConstructors })
-  if (manual) onLog('Connecting without an automatic restart (board already in upload mode)…\n')
+  if (manual) onLog('Keep holding BOOT (FLASH) while the board restarts…\n')
 
   let timer
   const timeout = new Promise((_, reject) => {
     timer = setTimeout(() => reject(new Error('timeout')), CONNECT_TIMEOUT_MS)
   })
   try {
-    const connecting = loader.main(manual ? 'no_reset' : 'default_reset')
+    const connecting = loader.main('default_reset')
     connecting.catch(() => {}) // if the time limit wins, this attempt's later failure is expected
     const description = await Promise.race([connecting, timeout])
+    if (manual) onLog('\nConnected: you can release BOOT (FLASH) now.\n')
     const mac = await loader.chip.readMac(loader)
     const tail = mac.split(':').slice(3).join('').toLowerCase()
     return { port, transport, loader, chip: loader.chip.CHIP_NAME, description, mac, chipId: tail, deviceId: `acls-${tail}` }
@@ -55,8 +59,8 @@ export async function connectBoard(onLog = () => {}, { manual = false, port: cho
     const error = new Error(
       noAnswer
         ? manual
-          ? 'The board still did not answer. Check the USB cable (it must carry data) and that nothing else uses the port, then try again.'
-          : 'The board did not go into upload mode by itself. Use "Connect by hand" below: hold the BOOT button, tap EN (RST), release BOOT, then connect.'
+          ? 'The board still did not answer. Keep BOOT (FLASH) pressed until the log says "Connected". If it does: check the USB cable (it must carry data) and that nothing else uses the port.'
+          : 'The board did not go into upload mode by itself. Do it by hand below: hold the BOOT (FLASH) button down while connecting.'
         : `${err.message || err}. Close Arduino IDE or any other serial monitor and try again.`
     )
     error.needsManual = noAnswer && !manual

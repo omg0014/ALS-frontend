@@ -1,11 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { CircleCheck, Download, Minus, Plus, Usb } from 'lucide-react'
-import { errorText } from '../../api/client.js'
+import { BookmarkPlus, CircleCheck, Download, Minus, Plus, Usb, X } from 'lucide-react'
+import { api, errorText } from '../../api/client.js'
 import { useLive } from '../../context/LiveContext.js'
 import { connectBoard, disconnectBoard, usbSupport } from '../../lib/flasher.js'
 import { downloadBase64 } from '../../lib/download.js'
-import { GROUP_TYPES } from '../../lib/labels.js'
+import { ESP_NAMES, GROUP_TYPES } from '../../lib/labels.js'
 import { Alert, Badge, Button, Field, LinkButton, Warnings } from '../../components/ui/index.js'
 import { WiringDiagram } from '../../components/wiring/WiringDiagram.jsx'
 import { WiringTables } from '../../components/wiring/WiringTables.jsx'
@@ -83,18 +83,18 @@ export function StepBoard({ form, set, board, setBoard }) {
           <strong>Put the board in upload mode by hand</strong>
           <ol className="small">
             <li>
-              Press and <strong>hold BOOT</strong> (FLASH on a NodeMCU).
+              Press and <strong>hold BOOT</strong> (FLASH on a NodeMCU). Keep holding it.
             </li>
             <li>
-              While holding it, <strong>press and release EN</strong> (RST).
+              While holding it, press the button below. The website restarts the board itself.
             </li>
             <li>
-              <strong>Release BOOT</strong>, then press:
+              <strong>Release BOOT</strong> when the log says <strong>Connected</strong>. Still only "Attempt…"? Tap EN (RST) once, still holding BOOT.
             </li>
           </ol>
           <div>
             <Button variant="primary" icon={Usb} onClick={() => connect(true)} disabled={busy}>
-              Connect (board is in upload mode)
+              Connect (holding BOOT)
             </Button>
           </div>
         </div>
@@ -154,6 +154,40 @@ export function StepLines({ form, set, profiles, profile }) {
   }
   const setCount = (type, n) => update({ counts: { ...form.counts, [type]: Math.max(0, n) } })
 
+  // Device templates: a saved ESP board + relay board + line counts, applied in one tap
+  const [templates, setTemplates] = useState([])
+  const [naming, setNaming] = useState(null) // name being typed for "Save as template"
+  const [tplError, setTplError] = useState(null)
+  const loadTemplates = () => api('/templates').then(setTemplates).catch(() => {})
+  useEffect(() => {
+    api('/templates').then(setTemplates).catch(() => {})
+  }, [])
+  const mine = templates.filter((t) => t.espModel === form.espModel && profiles.some((p) => p._id === t.profile))
+  const fullCounts = (c) => Object.fromEntries(LINE_TYPES.map((t) => [t, c?.[t] ?? 0]))
+  const isApplied = (t) => form.profile === t.profile && LINE_TYPES.every((k) => (form.counts?.[k] ?? 0) === (t.counts?.[k] ?? 0))
+  const applyTemplate = (t) => {
+    setChangingBoard(true)
+    update({ counts: fullCounts(t.counts), profile: t.profile, profileTouched: true })
+  }
+  const suggestName = () => {
+    const parts = LINE_TYPES.filter((k) => form.counts?.[k]).map((k) => `${form.counts[k]} ${GROUP_TYPES[k].toLowerCase()}`)
+    return `${ESP_NAMES[form.espModel]} + ${profile?.relayModule.split(',')[0] ?? 'relay'} · ${parts.join(', ')}`
+  }
+  const saveTemplate = async () => {
+    setTplError(null)
+    try {
+      await api('/templates', { method: 'POST', body: { name: naming, profile: form.profile, counts: fullCounts(form.counts) } })
+      setNaming(null)
+      loadTemplates()
+    } catch (err) {
+      setTplError(errorText(err))
+    }
+  }
+  const removeTemplate = async (t) => {
+    await api(`/templates/${t._id}`, { method: 'DELETE' }).catch(() => {})
+    loadTemplates()
+  }
+
   return (
     <>
       <StepTitle title="What does it switch?">Choose the room and say how many lines (mains circuits) this board switches. The relay board and the wiring are worked out for you.</StepTitle>
@@ -193,6 +227,26 @@ export function StepLines({ form, set, profiles, profile }) {
         </Alert>
       )}
 
+      {form.room && mine.length > 0 && (
+        <div className="stack-sm">
+          <div className="field-label">Quick start: use a template</div>
+          <div className="tpl-list">
+            {mine.map((t) => (
+              <span key={t._id} className={`tpl ${isApplied(t) ? 'selected' : ''}`}>
+                <button type="button" className="tpl-pick" aria-pressed={isApplied(t)} onClick={() => applyTemplate(t)}>
+                  {t.name}
+                </button>
+                {!t.builtIn && (
+                  <button type="button" className="tpl-x" aria-label={`Remove template ${t.name}`} onClick={() => removeTemplate(t)}>
+                    <X size={14} aria-hidden="true" />
+                  </button>
+                )}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
       {form.room && (
         <div className="stack-sm">
           <div className="field-label">How many lines does this board switch?</div>
@@ -208,7 +262,7 @@ export function StepLines({ form, set, profiles, profile }) {
               </div>
             ))}
           </div>
-          <p className="tiny muted">One line = one separate circuit from the switchboard. This board can switch up to {most}.</p>
+          <p className="tiny muted">One line = one separate circuit from the switchboard (a main). This board can switch up to {most}.</p>
         </div>
       )}
 
@@ -252,6 +306,29 @@ export function StepLines({ form, set, profiles, profile }) {
           )}
           {profile && lines.length > profile.channels && <Alert tone="bad">This relay board has only {profile.channels} relays for {lines.length} lines. Choose a bigger one or fewer lines.</Alert>}
           {profile && !profile.verified && <Alert tone="warn">This relay board is not tested yet: fine on the desk, but do not install it in a classroom until an admin marks it as tested.</Alert>}
+
+          {profile && lines.length > 0 && lines.length <= profile.channels && !mine.some(isApplied) && (
+            <div className="stack-sm">
+              {naming === null ? (
+                <Button size="sm" variant="ghost" icon={BookmarkPlus} style={{ justifySelf: 'start' }} onClick={() => setNaming(suggestName())}>
+                  Save these answers as a template
+                </Button>
+              ) : (
+                <div className="row">
+                  <Field label="Template name">
+                    <input value={naming} maxLength={60} onChange={(e) => setNaming(e.target.value)} />
+                  </Field>
+                  <Button size="sm" variant="primary" disabled={!naming.trim()} onClick={saveTemplate}>
+                    Save template
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => setNaming(null)}>
+                    Cancel
+                  </Button>
+                </div>
+              )}
+              {tplError && <Alert tone="bad">{tplError}</Alert>}
+            </div>
+          )}
 
           {profile && (
             <div className="table-wrap">
@@ -331,21 +408,37 @@ export function ArduinoFallback({ result }) {
   return (
     <div className="card card-sub stack-sm">
       <div className="row-between">
-        <strong>Use Arduino IDE instead</strong>
+        <strong>Upload it with Arduino IDE</strong>
         <Button size="sm" icon={Download} onClick={() => downloadBase64(result.zipName, result.zipBase64)}>
-          Download {result.zipName}
+          Download again
         </Button>
       </div>
-      <ol className="small">
+      <p className="small muted" style={{ margin: 0 }}>
+        <span className="mono">{result.zipName}</span> is in your Downloads folder. Then:
+      </p>
+      <ol className="small steps-list">
         {result.steps.map((s) => (
           <li key={s}>{s}</li>
         ))}
       </ol>
+      {result.bootLog && (
+        <details>
+          <summary className="small">What the Serial Monitor should show</summary>
+          <pre style={{ marginTop: 8 }}>{result.bootLog}</pre>
+        </details>
+      )}
     </div>
   )
 }
 
 export function BadWifiNote({ settings }) {
+  if (settings?.mqtt?.cloud && !settings.mqtt.external) {
+    return (
+      <Alert tone="bad" title="The MQTT broker is not set yet">
+        The boards need it to connect. An admin enters it under <Link to="/settings">Settings → MQTT broker</Link>.
+      </Alert>
+    )
+  }
   if (settings?.brokerHost) return null
   return (
     <Alert tone="bad" title="This PC's network address was not found">

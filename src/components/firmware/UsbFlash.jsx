@@ -152,18 +152,18 @@ export function UsbFlash({ buildId, espModel, expectedDeviceId, port, autoStart,
           <strong>Put the board in upload mode by hand</strong>
           <ol className="small">
             <li>
-              Press and <strong>hold BOOT</strong> (FLASH on a NodeMCU).
+              Press and <strong>hold BOOT</strong> (FLASH on a NodeMCU). Keep holding it.
             </li>
             <li>
-              While holding it, <strong>press and release EN</strong> (RST).
+              While holding it, press the button below. The website restarts the board itself.
             </li>
             <li>
-              <strong>Release BOOT</strong>, then press the button below.
+              <strong>Release BOOT</strong> when the log says <strong>Connected</strong>. Still only "Attempt…"? Tap EN (RST) once, still holding BOOT.
             </li>
           </ol>
           <div>
             <Button variant="primary" icon={Usb} onClick={() => run({ byHand: true })} disabled={busy}>
-              Upload (board is in upload mode)
+              Upload (holding BOOT)
             </Button>
           </div>
         </div>

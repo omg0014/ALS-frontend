@@ -506,6 +506,17 @@ svg.wiring .dot-gnd { fill: var(--muted); }
 .progress-steps li.done { color: var(--ok); }
 .progress-steps li.done .mark { background: var(--ok-bg); }
 
+/* ---- Wizard: templates ---- */
+.tpl-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.tpl { display: inline-flex; align-items: stretch; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); overflow: hidden; transition: border-color var(--fast), box-shadow var(--fast); }
+.tpl:hover { border-color: var(--border-strong); }
+.tpl.selected { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-soft); }
+.tpl-pick { font: inherit; font-size: 0.86rem; font-weight: 500; color: var(--text); background: none; border: 0; padding: 7px 14px; cursor: pointer; }
+.tpl.selected .tpl-pick { color: var(--primary); font-weight: 600; }
+.tpl-x { display: grid; place-items: center; border: 0; border-left: 1px solid var(--border); background: none; color: var(--muted); padding: 0 9px; cursor: pointer; }
+.tpl-x:hover { color: var(--bad); }
+.steps-list { display: grid; gap: 4px; margin: 0; }
+
 /* ---- Wizard: how many lines (+/−) and the final check ---- */
 .counter-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
 .counter-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface-2); }

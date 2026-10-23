@@ -46,7 +46,7 @@ export default function FirmwareWizardPage() {
       const [p, s, d, fi] = await Promise.all([api('/profiles'), api('/settings'), api(`/drafts/${encodeURIComponent(draftKey)}`), api('/firmware/info')])
       setInfo(fi)
       setProfiles(p)
-      setSettings(s.values)
+      setSettings({ ...s.values, mqtt: s.mqtt })
       if (deviceId) {
         const dev = index.devices.get(deviceId)
         if (!dev) throw new Error('Device not found')
@@ -181,7 +181,8 @@ export default function FirmwareWizardPage() {
   const chipOk = /^[0-9a-f]{1,6}$/i.test(form.chipId.replace(/^acls-/i, ''))
   const alreadyRegistered = form.mode === 'new' && [...index.devices.values()].some((d) => d.deviceId === `acls-${form.chipId.toLowerCase().padStart(6, '0')}` && d.status !== 'retired')
   const lineCount = Object.values(form.counts ?? {}).reduce((a, b) => a + b, 0)
-  const wifiOk = Boolean(form.wifiSsid && wifiPassword && settings?.brokerHost)
+  const brokerMissing = Boolean(settings?.mqtt?.cloud && !settings.mqtt.external)
+  const wifiOk = Boolean(form.wifiSsid && wifiPassword && settings?.brokerHost && !brokerMissing)
   const canNext = {
     [BOARD]: chipOk && !alreadyRegistered,
     [LINES]: Boolean(form.room && form.name && profile && lineCount > 0 && lineCount <= profile.channels),
@@ -368,17 +369,27 @@ export default function FirmwareWizardPage() {
               {job ? <CodePreview key={job.buildId} preview={sent?.buildId === job.buildId ? sent : null} initialTab="config.h" /> : <CodePreview preview={preview} />}
             </div>
 
-            {!job && (
+            {!job && !info?.buildService?.ready && (
+              <div className="stack-sm">
+                <p className="small muted" style={{ margin: 0 }}>
+                  You upload this code with Arduino IDE on any computer: download it, then follow the steps that appear here.
+                </p>
+                <div className="row">
+                  <Button variant="primary" size="lg" icon={Download} disabled={!wifiOk || busy} onClick={downloadInstead}>
+                    {busy ? 'Preparing…' : 'Yes, download the code'}
+                  </Button>
+                  {!wifiPassword && <span className="small muted">The WiFi password is missing: use Edit next to WiFi.</span>}
+                </div>
+              </div>
+            )}
+            {!job && info?.buildService?.ready && (
               <div className="row">
                 {usb ? (
                   <Button variant="primary" size="lg" icon={Upload} disabled={!wifiOk || busy} onClick={startUpload}>
                     {busy ? 'Saving…' : 'Yes, upload to board'}
                   </Button>
                 ) : (
-                  <Alert tone="info">
-                    {info?.buildService?.ready ? usbSupport().reason : 'The website cannot build firmware yet (run "npm run toolchain:install" on the server).'} You can still download it for
-                    Arduino IDE.
-                  </Alert>
+                  <Alert tone="info">{usbSupport().reason} You can still download it for Arduino IDE.</Alert>
                 )}
                 <Button variant="ghost" icon={Download} disabled={!wifiOk || busy} onClick={downloadInstead}>
                   Download for Arduino IDE instead

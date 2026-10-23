@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
-import { Save, Wifi } from 'lucide-react'
+import { Save } from 'lucide-react'
 import { api, errorText } from '../../api/client.js'
 import { useToast } from '../../context/feedback.js'
-import { Alert, Badge, Button, Card, Field, Loading, PageHeader } from '../../components/ui/index.js'
+import { Badge, Button, Card, Field, Loading, PageHeader } from '../../components/ui/index.js'
+import { MqttBrokerCard } from './MqttBrokerCard.jsx'
 
-// Only the settings a school changes are shown. Everything else stays on its default and is not shown:
-// device connection (this PC's address is found automatically, port 1883, prefix acls/v1) and switching
+// Only the settings a school changes are shown: the MQTT broker (cloud hosting only; on the school PC it
+// is built in and found automatically) and the Home-page warnings. Switching stays on its defaults
 // (restore how they were after a power cut, 250/50 ms pauses, 5 s reply wait).
 const FIELDS = {
   rssiAlertDbm: { label: 'Warn when WiFi signal is below (dBm)', hint: '-75 is a good default' },
@@ -57,23 +58,15 @@ export default function SettingsPage() {
         }
       />
       <div className="stack">
-        <Card title="Connection to the devices" icon={Wifi} description="Found automatically. Nothing to set here.">
-          {mqtt?.external ? (
-            <p className="small">
-              Devices connect to the MQTT broker <strong className="mono">{values.brokerHost}</strong> (port {values.brokerPort}
-              {mqtt.tls ? ', encrypted' : ''}). It is set on the server (MQTT_URL); changing it needs a firmware update on every device.
-            </p>
-          ) : values.brokerHost ? (
-            <p className="small">
-              Devices connect to this PC at <strong className="mono">{values.brokerHost}</strong> (port {values.brokerPort}). Give this PC a fixed address in the school
-              router, so it never changes. If it does change, the devices are marked "update needed".
-            </p>
-          ) : (
-            <Alert tone="warn" title="This PC's network address was not found">
-              Connect this PC to the school network (WiFi or cable), then restart the server.
-            </Alert>
-          )}
-        </Card>
+        <MqttBrokerCard
+          mqtt={mqtt}
+          values={values}
+          onChange={async (m) => {
+            setMqtt(m)
+            const r = await api('/settings')
+            setValues((v) => ({ ...v, brokerHost: r.values.brokerHost, brokerPort: r.values.brokerPort }))
+          }}
+        />
 
         <Card title="Warnings on the Home page">
           <div className="form-grid">

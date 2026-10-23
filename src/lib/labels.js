@@ -9,7 +9,7 @@ export const ROLE_HELP = {
 
 export const STAGES = { draft: 'Being set up', bench_tested: 'Tested on the desk', installed: 'Installed', live: 'Live' }
 export const ROOM_TYPES = { classroom: 'Classroom', office: 'Office', reception: 'Reception', staffroom: 'Staff room', other: 'Other' }
-export const GROUP_TYPES = { lights: 'Lights', fans: 'Fans', mixed: 'Lights and fans', load: 'TV / smart board' }
+export const GROUP_TYPES = { lights: 'Lights', fans: 'Fans', mixed: 'Lights and fans', ac: 'AC', load: 'TV / smart board' }
 
 export const COMMAND_RESULTS = {
   confirmed: { label: 'Done', tone: 'ok' },

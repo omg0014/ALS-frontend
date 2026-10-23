@@ -1,5 +1,6 @@
 // Starter programs for the code editor. Pins only where the PRD defines them
 // (NodeMCU onboard LED = GPIO2, active LOW; red 30A relay on D5/GPIO14, active HIGH, as hardware type P2).
+// The IR examples follow the owner's own desk wiring (sensor OUT on GPIO14, IR LED on GPIO4, ESP32 or NodeMCU), not the PRD; same as firmware/tools/ir_*.
 // group: heading the example is listed under.
 
 export const EXAMPLES = [
@@ -245,6 +246,179 @@ void setup() {
 
 void loop() {
   server.handleClient();
+}
+`,
+  },
+  {
+    id: 'ir-read-remote',
+    group: 'IR sensor / AC (ESP32 or ESP-12)',
+    title: 'IR receiver: read your AC remote',
+    boards: ['esp32', 'esp8266'],
+    code: `// IR receiver test for ESP32 DevKit or NodeMCU (ESP-12E): reads your AC remote.
+// New test program, not from the verified set. Not yet tried on real hardware.
+// Wiring (GPIO14 on both boards):
+//   ESP32 DevKit: sensor VCC -> 3V3, GND -> GND, OUT -> 14 (D14)
+//   NodeMCU:      sensor VCC -> 3V,  GND -> G,   OUT -> D5
+// Library: IRremoteESP8266 (Arduino IDE: Tools > Manage Libraries > search "IRremoteESP8266").
+// Open Serial Monitor at 115200, point the AC remote at the sensor from ~30 cm and press a button.
+#include <Arduino.h>
+#include <IRremoteESP8266.h>
+#include <IRrecv.h>
+#include <IRutils.h>
+#include <IRac.h>
+
+const uint16_t kRecvPin = 14;              // ESP32: 14 (D14), NodeMCU: D5
+#if defined(ESP32)
+const uint8_t kLedPin = 2;                 // ESP32 DevKit blue LED, lit when HIGH
+const uint8_t kLedOn = HIGH;
+#else
+const uint8_t kLedPin = LED_BUILTIN;       // NodeMCU blue LED, lit when LOW
+const uint8_t kLedOn = LOW;
+#endif
+const uint16_t kCaptureBufferSize = 1024;  // AC remotes send long messages
+const uint8_t kTimeout = 50;               // ms of silence that ends one message (AC needs a long one)
+
+IRrecv irrecv(kRecvPin, kCaptureBufferSize, kTimeout, true);
+decode_results results;
+
+void setup() {
+  Serial.begin(115200);
+  delay(300);
+  pinMode(kLedPin, OUTPUT);
+  digitalWrite(kLedPin, !kLedOn);
+  irrecv.enableIRIn();
+  Serial.println();
+  Serial.println("IR test ready. Point the AC remote at the sensor and press a button.");
+}
+
+void loop() {
+  if (!irrecv.decode(&results)) return;
+  digitalWrite(kLedPin, kLedOn);  // blink: something was received
+
+  Serial.println("----------------------------------------");
+  Serial.print(resultToHumanReadableBasic(&results));  // protocol name + code
+  String ac = IRAcUtils::resultAcToString(&results);   // e.g. "Power: On, Mode: 1 (Cool), Temp: 24C"
+  if (ac.length()) Serial.println("AC settings: " + ac);
+  else Serial.println("AC settings: not recognised (raw timings below can still be replayed)");
+  Serial.println(resultToSourceCode(&results));         // raw data, needed to send it back later
+
+  irrecv.resume();
+  delay(100);
+  digitalWrite(kLedPin, !kLedOn);
+}
+`,
+  },
+  {
+    id: 'ir-obstacle',
+    group: 'IR sensor / AC (ESP32 or ESP-12)',
+    title: 'IR obstacle sensor: test',
+    boards: ['esp32', 'esp8266'],
+    code: `// IR obstacle sensor test for ESP32 DevKit or NodeMCU (ESP-12E). No library needed.
+// New test program, not from the verified set. Not yet tried on real hardware.
+// Wiring (GPIO14 on both boards):
+//   ESP32 DevKit: sensor VCC -> 3V3, GND -> GND, OUT -> 14 (D14)
+//   NodeMCU:      sensor VCC -> 3V,  GND -> G,   OUT -> D5
+// Open Serial Monitor at 115200 and move your hand 2-10 cm in front of the sensor.
+const uint8_t kSensorPin = 14;  // ESP32: 14 (D14), NodeMCU: D5
+#if defined(ESP32)
+const uint8_t kLedPin = 2;      // ESP32 DevKit blue LED, lit when HIGH
+const uint8_t kLedOn = HIGH;
+#else
+const uint8_t kLedPin = LED_BUILTIN;  // NodeMCU blue LED, lit when LOW
+const uint8_t kLedOn = LOW;
+#endif
+
+bool last = false;
+
+void setup() {
+  Serial.begin(115200);
+  delay(300);
+  pinMode(kSensorPin, INPUT);
+  pinMode(kLedPin, OUTPUT);
+  Serial.println();
+  Serial.println("Obstacle test ready. Move your hand in front of the sensor.");
+}
+
+void loop() {
+  bool seen = digitalRead(kSensorPin) == LOW;  // these modules pull OUT low when they see something
+  digitalWrite(kLedPin, seen ? kLedOn : !kLedOn);  // blue LED on while something is seen
+  if (seen != last) {
+    Serial.println(seen ? "Object detected" : "Clear");
+    last = seen;
+  }
+  delay(20);
+}
+`,
+  },
+  {
+    id: 'ir-ac-onoff',
+    group: 'IR sensor / AC (ESP32 or ESP-12)',
+    title: 'IR LED: switch the AC ON / OFF',
+    boards: ['esp32', 'esp8266'],
+    code: `// AC ON/OFF test for ESP32 DevKit or NodeMCU (ESP-12E) with an IR LED.
+// New test program, not from the verified set. Not yet tried on real hardware.
+// Wiring (GPIO4 on both boards): a ready IR transmitter module (KY-005): VCC -> 3V3/3V, GND -> GND/G, S -> ESP32: 4 (D4), NodeMCU: D2.
+// For a whole room's range drive the IR LED through a transistor (BC547 / 2N2222) instead.
+// Library: IRremoteESP8266.
+// 1. Run ir_ac_read first and note the "Protocol" it prints for your AC remote (e.g. DAIKIN, VOLTAS, LG, GREE).
+// 2. Put it in AC_PROTOCOL below, upload, open Serial Monitor at 115200 (line ending: Newline).
+// 3. Point the IR LED at the AC (within 1-3 m) and press the board's BOOT / FLASH button: AC ON, press again: OFF.
+//    In Arduino IDE's Serial Monitor you can also type: 1 = ON, 0 = OFF, u = 1 degree warmer, d = 1 degree cooler.
+#include <Arduino.h>
+#include <IRremoteESP8266.h>
+#include <IRac.h>
+#include <IRutils.h>
+
+const char *AC_PROTOCOL = "DAIKIN";  // <-- change to what ir_ac_read printed
+const char *AC_MODEL = "";           // only if ir_ac_read printed a model, e.g. "1"
+const uint16_t kIrLedPin = 4;        // ESP32: 4 (D4), NodeMCU: D2
+const uint8_t kButtonPin = 0;        // BOOT (ESP32) / FLASH (NodeMCU) button: reads LOW while pressed
+
+IRac ac(kIrLedPin);
+
+void send() {
+  Serial.printf("Sending: power %s, cool, %d C ... ", ac.next.power ? "ON" : "OFF", (int)ac.next.degrees);
+  Serial.println(ac.sendAc() ? "sent" : "FAILED (protocol not supported for sending)");
+}
+
+void setup() {
+  Serial.begin(115200);
+  delay(300);
+  Serial.println();
+  decode_type_t protocol = strToDecodeType(AC_PROTOCOL);
+  if (!IRac::isProtocolSupported(protocol)) {
+    Serial.printf("\\"%s\\" is not an AC protocol this library can send. Check the name ir_ac_read printed.\\n", AC_PROTOCOL);
+  }
+  IRac::initState(&ac.next);
+  ac.next.protocol = protocol;
+  ac.next.model = IRac::strToModel(AC_MODEL, 1);
+  ac.next.mode = stdAc::opmode_t::kCool;
+  ac.next.celsius = true;
+  ac.next.degrees = 24;
+  ac.next.fanspeed = stdAc::fanspeed_t::kAuto;
+  ac.next.power = false;
+  pinMode(kButtonPin, INPUT_PULLUP);
+  Serial.printf("AC test ready (%s). Press BOOT/FLASH to switch ON/OFF, or type 1 = ON, 0 = OFF, u = warmer, d = cooler.\\n", AC_PROTOCOL);
+}
+
+void loop() {
+  static bool wasPressed = false;
+  bool pressed = digitalRead(kButtonPin) == LOW;
+  if (pressed && !wasPressed) {
+    ac.next.power = !ac.next.power;
+    send();
+    delay(50);  // ignore the button's contact bounce
+  }
+  wasPressed = pressed;
+
+  if (!Serial.available()) return;
+  char c = Serial.read();
+  if (c == '1') ac.next.power = true;
+  else if (c == '0') ac.next.power = false;
+  else if (c == 'u' && ac.next.degrees < 30) ac.next.degrees++;
+  else if (c == 'd' && ac.next.degrees > 16) ac.next.degrees--;
+  else return;  // ignore newlines and other keys
+  send();
 }
 `,
   },
