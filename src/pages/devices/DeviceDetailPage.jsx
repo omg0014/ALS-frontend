@@ -13,6 +13,7 @@ import { Alert, Badge, Button, Card, LinkButton, Loading, PageHeader, StatusDot,
 import { CommandTable } from '../../components/CommandTable.jsx'
 import { BuildHistory } from './BuildHistory.jsx'
 import { EditDeviceModal, ReplaceBoardModal, WifiUpdateModal } from './DeviceModals.jsx'
+import { SimpleDeviceView } from './SimpleBoardPages.jsx'
 
 export default function DeviceDetailPage() {
   const { id } = useParams()
@@ -44,6 +45,7 @@ export default function DeviceDetailPage() {
   if (!detail || !data) return <Loading />
 
   const { device, channels, commands, history } = detail
+  if (device.kind === 'simple') return <SimpleDeviceView detail={detail} editor={isEditor(user) && device.status !== 'retired'} onChanged={load} />
   const profile = device.profile
   const live = index.devices.get(device._id)?.state ?? detail.state
   const groups = device.room ? index.groupsByRoom.get(device.room._id) ?? [] : []

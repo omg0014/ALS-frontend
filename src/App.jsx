@@ -18,6 +18,7 @@ import DeviceDetailPage from './pages/devices/DeviceDetailPage.jsx'
 const RoomInstallPage = lazy(() => import('./pages/rooms/RoomInstallPage.jsx'))
 const WiringSheetPage = lazy(() => import('./pages/rooms/WiringSheetPage.jsx'))
 const FirmwareWizardPage = lazy(() => import('./pages/firmware/FirmwareWizardPage.jsx'))
+const NewSimpleBoardPage = lazy(() => import('./pages/devices/SimpleBoardPages.jsx'))
 const HardwarePage = lazy(() => import('./pages/hardware/HardwarePage.jsx'))
 const HelpPage = lazy(() => import('./pages/help/HelpPage.jsx'))
 const ActivityPage = lazy(() => import('./pages/admin/ActivityPage.jsx'))
@@ -80,6 +81,7 @@ function AppRoutes({ user }) {
       <Route path="/rooms/:id/wiring-sheet" element={<WiringSheetPage />} />
       <Route path="/devices" element={<DevicesPage />} />
       <Route path="/devices/new" element={<FirmwareWizardPage key="new" />} />
+      <Route path="/devices/new-mqtt" element={<NewSimpleBoardPage />} />
       <Route path="/devices/:deviceId/firmware" element={<FirmwareWizardPage />} />
       <Route path="/devices/:id" element={<DeviceDetailPage />} />
       <Route path="/hardware" element={<HardwarePage />} />

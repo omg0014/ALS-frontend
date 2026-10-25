@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { CirclePlus, Cpu, Search } from 'lucide-react'
+import { CirclePlus, Cpu, Radio, Search } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext.js'
 import { useLive } from '../../context/LiveContext.js'
 import { isEditor } from '../../lib/permissions.js'
@@ -59,9 +59,14 @@ export default function DevicesPage() {
         description="The relay boxes in the rooms. Each one switches up to four groups of lights or fans."
         actions={
           isEditor(user) && (
-            <LinkButton to="/devices/new" variant="primary" icon={CirclePlus}>
-              Add a device
-            </LinkButton>
+            <div className="row">
+              <LinkButton to="/devices/new-mqtt" icon={Radio}>
+                Add MQTT board
+              </LinkButton>
+              <LinkButton to="/devices/new" variant="primary" icon={CirclePlus}>
+                Add a device
+              </LinkButton>
+            </div>
           )
         }
       />
@@ -128,16 +133,25 @@ export default function DevicesPage() {
                       <div className="sub">{d.state?.online ? `since ${timeAgo(d.state.onlineSince)}` : `last seen ${timeAgo(d.state?.lastSeen)}`}</div>
                     </td>
                     <td>
-                      <div className="row">
-                        <span>
-                          {profile?.code} · {ESP_NAMES[profile?.espModel]}
-                        </span>
-                        {profile && !profile.verified && <Badge tone="warn">not tested</Badge>}
-                      </div>
-                      <div className="sub">{d.channels.length} relays</div>
+                      {d.kind === 'simple' ? (
+                        <>
+                          <span>MQTT board (own code)</span>
+                          <div className="sub mono">{d.simple?.commandTopic}</div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="row">
+                            <span>
+                              {profile?.code} · {ESP_NAMES[profile?.espModel]}
+                            </span>
+                            {profile && !profile.verified && <Badge tone="warn">not tested</Badge>}
+                          </div>
+                          <div className="sub">{d.channels.length} relays</div>
+                        </>
+                      )}
                     </td>
                     <td>
-                      {d.firmwareVersion || <span className="muted">not uploaded</span>}
+                      {d.kind === 'simple' ? <span className="muted">own code</span> : d.firmwareVersion || <span className="muted">not uploaded</span>}
                       {d.updateNeeded && (
                         <div>
                           <Badge tone="info" title={d.updateReasons.map((r) => r.reason).join('\n')}>
