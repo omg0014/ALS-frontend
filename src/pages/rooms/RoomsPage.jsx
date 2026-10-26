@@ -18,7 +18,8 @@ function loadWarning(profile, group) {
   if (profile.contactRatingA && a > profile.contactRatingA) return `${a} A is more than the relay can switch (${profile.contactRatingA} A)`
   if (profile.maxAmpsPerChannel && a > profile.maxAmpsPerChannel) return `${a} A is above the safe ${profile.maxAmpsPerChannel} A for this relay: split it or use a contactor`
   if (group.type === 'ac' && (profile.contactRatingA ?? 0) < 30) return 'An AC needs the 30 A relay'
-  if (profile.contactRatingA >= 30 && !['ac', 'load'].includes(group.type)) return 'The 30 A relay is meant for an AC or TV / smart-board point'
+  if (group.type === 'all' && (profile.contactRatingA ?? 0) < 30) return 'A whole classroom (lights + fans + TV) on one relay needs the 30 A relay'
+  if (profile.contactRatingA >= 30 && !['ac', 'load', 'all'].includes(group.type)) return 'The 30 A relay is meant for an AC, a TV point or a whole classroom'
   return null
 }
 
