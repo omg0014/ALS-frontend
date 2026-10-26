@@ -3,13 +3,11 @@ import CodeMirror from '@uiw/react-codemirror'
 import { cpp } from '@codemirror/lang-cpp'
 import { EditorView } from '@codemirror/view'
 import { Code, ListChecks } from 'lucide-react'
-import { useTheme } from '../../hooks/useTheme.js'
 import { Tabs } from '../ui/index.js'
 
 // What will be uploaded: a plain-language summary, and the real code with the user's values filled in.
 // initialTab: which tab opens first (default: the summary when there is one)
 export function CodePreview({ preview, initialTab }) {
-  const { dark } = useTheme()
   const [picked, setPicked] = useState(null)
   const extensions = useMemo(() => [cpp(), EditorView.lineWrapping], [])
   if (!preview) return null
@@ -43,7 +41,7 @@ export function CodePreview({ preview, initialTab }) {
             {file.note}. Passwords are hidden here; the real ones go onto the board.
           </p>
           <div className="code-editor">
-            <CodeMirror value={file.content} height="380px" theme={dark ? 'dark' : 'light'} extensions={extensions} editable={false} basicSetup={{ foldGutter: false }} />
+            <CodeMirror value={file.content} height="380px" theme="light" extensions={extensions} editable={false} basicSetup={{ foldGutter: false }} />
           </div>
         </>
       )}

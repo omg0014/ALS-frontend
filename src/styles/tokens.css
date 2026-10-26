@@ -1,146 +1,109 @@
 /* Design tokens: every colour, radius, shadow and timing used by the site. Change the look here.
-   The theme is chosen by data-theme on <html> (set by lib/theme.js: light, dark or follow the computer). */
+   One light theme. Palette: white surfaces, purple for actions and the current selection, gold for
+   "ON" and premium highlights, greys (with a faint violet cast) for text, borders and quiet surfaces.
+   Status colours stay inside the same palette: purple = good/connected, gold = attention, deep plum
+   = problem; every status also carries an icon or a word, never colour alone. */
 
 :root {
   color-scheme: light;
 
-  /* Surfaces */
-  --bg: #f3f5fa;
+  /* Surfaces: the page is a soft grey, cards and the sidebar are white */
+  --bg: #f6f5f9;
   --surface: #ffffff;
-  --surface-2: #f6f7fb;
-  --surface-3: #eceff6;
-  --surface-glass: rgb(255 255 255 / 78%);
-  --border: #e4e7f0;
-  --border-strong: #d0d6e2;
+  --surface-2: #faf9fc;
+  --surface-3: #f1eff5;
+  --surface-glass: rgb(255 255 255 / 88%);
+  --border: #e8e5ee;
+  --border-strong: #d6d2de;
 
-  /* Text */
-  --text: #0e1426;
-  --text-2: #374058;
-  --muted: #677089;
+  /* Text: warm charcoal greys */
+  --text: #1c1a24;
+  --text-2: #47434f;
+  --muted: #74707e;
 
-  /* Brand: indigo → violet */
-  --primary: #4f46e5;
-  --primary-solid: #4f46e5;
-  --primary-hover: #4338ca;
-  --primary-soft: #eef0ff;
+  /* Purple: actions, links, the selected thing */
+  --primary: #5a3cc8;
+  --primary-solid: #5a3cc8;
+  --primary-hover: #4a2fae;
+  --primary-soft: #f2eefc;
+  --primary-line: #ddd3f8;
   --primary-text: #ffffff;
-  --accent: #8b5cf6;
-  --gradient-brand: linear-gradient(135deg, #6366f1 0%, #7c3aed 60%, #a855f7 100%);
-  --glow-brand: 0 8px 24px -8px rgb(79 70 229 / 55%);
+  --gradient-brand: #5a3cc8;
+  --glow-brand: 0 6px 16px -8px rgb(90 60 200 / 45%);
 
-  /* Status */
-  --ok: #047857;
-  --ok-bg: #e8f8f0;
-  --ok-solid: #10b981;
-  --warn: #b45309;
-  --warn-bg: #fff5e5;
-  --warn-solid: #f59e0b;
-  --bad: #c0262d;
-  --bad-bg: #fdeeee;
-  --bad-solid: #ef4444;
-  --info: #4338ca;
-  --info-bg: #eef0ff;
+  /* Gold: "ON", premium highlights */
+  --gold: #c4931c;
+  --gold-strong: #8f6a10;
+  --gold-soft: #fbf5e4;
+  --gold-line: #eedca8;
+  --accent: #c4931c;
 
-  /* "ON" colour for lights and fans: warm amber with a glow */
-  --on: #f59e0b;
-  --on-hover: #ea8f06;
-  --on-soft: #fff4dc;
-  --on-text: #3a2300;
-  --on-icon: #b45309;
-  --gradient-on: linear-gradient(135deg, #fcd34d 0%, #fbbf24 35%, #f59e0b 100%);
-  --glow-on: 0 0 0 1px rgb(245 158 11 / 25%), 0 6px 20px -4px rgb(245 158 11 / 55%);
+  /* Status, from the same palette */
+  --ok: #4a2fae;
+  --ok-bg: #f2eefc;
+  --ok-solid: #5a3cc8;
+  --warn: #8f6a10;
+  --warn-bg: #fbf5e4;
+  --warn-solid: #c4931c;
+  --bad: #8b2a57;
+  --bad-bg: #f9eef3;
+  --bad-solid: #9b3163;
+  --info: #4a2fae;
+  --info-bg: #f2eefc;
 
-  /* Sidebar: deep ink in both themes */
-  --side-bg: #0b1020;
-  --side-bg-2: #131b35;
-  --side-border: rgb(255 255 255 / 7%);
-  --side-text: #c4cade;
-  --side-muted: #7c86a4;
-  --side-hover: rgb(255 255 255 / 6%);
-  --side-active: rgb(129 140 248 / 16%);
-  --side-accent: #a5b4fc;
+  /* "ON" for lights and fans: solid gold */
+  --on: #d4a32a;
+  --on-hover: #c4931c;
+  --on-soft: #fbf5e4;
+  --on-text: #2f2205;
+  --on-icon: #8f6a10;
+  --gradient-on: #d4a32a;
+  --glow-on: 0 0 0 1px rgb(196 147 28 / 22%), 0 4px 12px -6px rgb(196 147 28 / 55%);
+
+  /* Sidebar: white, quiet greys, purple selection with a gold marker */
+  --side-bg: #ffffff;
+  --side-bg-2: #ffffff;
+  --side-border: #ebe8f0;
+  --side-text: #47434f;
+  --side-muted: #8a8693;
+  --side-hover: #f6f5f9;
+  --side-active: #f2eefc;
+  --side-accent: #5a3cc8;
 
   /* Shape */
   --radius-xs: 7px;
-  --radius-sm: 10px;
-  --radius: 14px;
-  --radius-lg: 20px;
-  --shadow-xs: 0 1px 2px rgb(15 23 42 / 5%);
-  --shadow-sm: 0 1px 2px rgb(15 23 42 / 4%), 0 1px 4px rgb(15 23 42 / 3%);
-  --shadow: 0 1px 2px rgb(15 23 42 / 4%), 0 8px 20px -6px rgb(15 23 42 / 10%);
-  --shadow-md: 0 2px 4px rgb(15 23 42 / 4%), 0 16px 32px -10px rgb(15 23 42 / 16%);
-  --shadow-lg: 0 28px 56px -16px rgb(15 23 42 / 32%), 0 2px 6px rgb(15 23 42 / 6%);
-  --ring: 0 0 0 4px rgb(79 70 229 / 18%);
-  --highlight: inset 0 1px 0 rgb(255 255 255 / 22%);
+  --radius-sm: 9px;
+  --radius: 12px;
+  --radius-lg: 16px;
+  --shadow-xs: 0 1px 2px rgb(28 26 36 / 5%);
+  --shadow-sm: 0 1px 2px rgb(28 26 36 / 4%), 0 2px 6px -2px rgb(28 26 36 / 5%);
+  --shadow: 0 1px 2px rgb(28 26 36 / 4%), 0 8px 18px -8px rgb(28 26 36 / 12%);
+  --shadow-md: 0 2px 4px rgb(28 26 36 / 4%), 0 14px 28px -12px rgb(28 26 36 / 16%);
+  --shadow-lg: 0 24px 48px -16px rgb(28 26 36 / 24%), 0 2px 6px rgb(28 26 36 / 5%);
+  --ring: 0 0 0 3px rgb(90 60 200 / 20%);
+  --highlight: inset 0 1px 0 rgb(255 255 255 / 16%);
 
-  /* Motion */
-  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
-  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* Motion: short and calm */
+  --ease: cubic-bezier(0.22, 0.8, 0.24, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
   --fast: 0.15s;
-  --mid: 0.25s;
+  --mid: 0.22s;
 
   /* Layout */
-  --sidebar-w: 264px;
-  --content-max: 1240px;
+  --sidebar-w: 256px;
+  --content-max: 1220px;
 
-  /* Analytics: one fixed color per line type (validated categorical set, light surface) */
-  --series-lights: #2a78d6;
-  --series-fans: #eb6834;
-  --series-mixed: #1baf7a;
-  --series-ac: #eda100;
-  --series-load: #e87ba4;
-  --series-all: #008300;
+  /* Analytics: one fixed colour per line type, from the palette (adjacent pairs checked for
+     colour-blind separation; values are always labelled in the legend, tooltip and tables) */
+  --series-lights: #c4931c;
+  --series-fans: #5a3cc8;
+  --series-mixed: #a58ce8;
+  --series-ac: #524e5c;
+  --series-load: #d1a94a;
+  --series-all: #8a4fb8;
 
-  --font: 'Inter Variable', 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans', sans-serif;
+  /* Type: Figtree for the interface, Fraunces (a soft serif) for page titles */
+  --font: 'Figtree Variable', 'Figtree', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --display: 'Fraunces Variable', 'Fraunces', Georgia, 'Times New Roman', serif;
   --mono: ui-monospace, 'SF Mono', SFMono-Regular, 'JetBrains Mono', Menlo, Consolas, monospace;
-}
-
-:root[data-theme='dark'] {
-  color-scheme: dark;
-  --series-lights: #3987e5;
-  --series-fans: #d95926;
-  --series-mixed: #199e70;
-  --series-ac: #c98500;
-  --series-load: #d55181;
-  --series-all: #008300;
-  --bg: #090d18;
-  --surface: #10162a;
-  --surface-2: #161e36;
-  --surface-3: #1e2843;
-  --surface-glass: rgb(16 22 42 / 76%);
-  --border: #1f2944;
-  --border-strong: #2e3a5c;
-  --text: #eef1f9;
-  --text-2: #c7cde0;
-  --muted: #8a93ae;
-  --primary: #949cff;
-  --primary-solid: #5b5ff0;
-  --primary-hover: #6d71f5;
-  --primary-soft: #1a1f47;
-  --accent: #a78bfa;
-  --glow-brand: 0 8px 28px -8px rgb(99 102 241 / 70%);
-  --ok: #4ade9b;
-  --ok-bg: #0d2a20;
-  --ok-solid: #22c55e;
-  --warn: #fbbf24;
-  --warn-bg: #2a2010;
-  --bad: #fb7d7d;
-  --bad-bg: #2d1418;
-  --bad-solid: #f05252;
-  --info: #a5b4fc;
-  --info-bg: #1a1f47;
-  --on: #fbbf24;
-  --on-hover: #fcc945;
-  --on-soft: #2b2110;
-  --on-icon: #fcd34d;
-  --glow-on: 0 0 0 1px rgb(251 191 36 / 30%), 0 6px 24px -4px rgb(251 191 36 / 45%);
-  --side-bg: #070a14;
-  --side-bg-2: #0d1328;
-  --shadow-xs: none;
-  --shadow-sm: 0 0 0 1px rgb(255 255 255 / 1%);
-  --shadow: 0 8px 24px -10px rgb(0 0 0 / 60%);
-  --shadow-md: 0 16px 36px -12px rgb(0 0 0 / 70%);
-  --shadow-lg: 0 32px 64px -16px rgb(0 0 0 / 80%);
-  --ring: 0 0 0 4px rgb(148 156 255 / 25%);
-  --highlight: inset 0 1px 0 rgb(255 255 255 / 12%);
 }

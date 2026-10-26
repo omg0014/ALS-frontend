@@ -5,7 +5,6 @@ import { CircleCheck, FilePlus, Hammer, Save, Trash, TriangleAlert, Upload } fro
 import { api, errorText } from '../../api/client.js'
 import { useConfirm, useToast } from '../../context/feedback.js'
 import { useBuild } from '../../hooks/useBuild.js'
-import { useTheme } from '../../hooks/useTheme.js'
 import { formatDateTime } from '../../lib/format.js'
 import { Alert, Badge, Button, Card, Field, PageHeader, Spinner } from '../../components/ui/index.js'
 import { UsbFlash } from '../../components/firmware/UsbFlash.jsx'
@@ -41,7 +40,6 @@ function parseMessages(log = '') {
 export default function CodeEditorPage() {
   const toast = useToast()
   const confirm = useConfirm()
-  const { dark } = useTheme()
   const editor = useRef(null)
   const [draft] = useState(loadDraft)
 
@@ -220,7 +218,7 @@ export default function CodeEditorPage() {
                   ref={editor}
                   value={doc.code}
                   height="460px"
-                  theme={dark ? 'dark' : 'light'}
+                  theme="light"
                   extensions={extensions}
                   onChange={(code) => set({ code })}
                   basicSetup={{ tabSize: 2 }}

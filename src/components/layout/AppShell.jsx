@@ -8,7 +8,6 @@ import { Button } from '../ui/index.js'
 import { Brand } from './Brand.jsx'
 import { ChangePasswordModal } from './ChangePasswordModal.jsx'
 import { NAVIGATION } from './navigation.js'
-import { ThemeSwitch } from './ThemeSwitch.jsx'
 
 // Sidebar on desktop, slide-out menu on phones; page content on the right.
 export function AppShell({ children }) {
@@ -68,7 +67,6 @@ export function AppShell({ children }) {
               </span>
               {connected ? 'Live updates on' : 'Reconnecting…'}
             </div>
-            <ThemeSwitch />
           </div>
           <div className="user-card">
             <span className="avatar">{user.name.slice(0, 1).toUpperCase()}</span>
