@@ -207,14 +207,14 @@
 .page-back svg { width: 15px; height: 15px; transition: transform var(--fast) var(--ease); }
 .page-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 
-.stack { display: grid; gap: 16px; }
-.stack-sm { display: grid; gap: 8px; }
-.stack-lg { display: grid; gap: 24px; }
+.stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+.stack-sm { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+.stack-lg { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; }
 .row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .row-between { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
 .grid-2 { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
 .grid-cards { display: grid; gap: 18px; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); }
-.grid-stats { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+.grid-stats { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); min-width: 0; }
 .section { margin-top: 30px; }
 .section-head { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; margin-bottom: 14px; }
 .section-head h2 { display: flex; align-items: center; gap: 8px; }

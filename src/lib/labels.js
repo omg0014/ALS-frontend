@@ -9,6 +9,8 @@ export const ROLE_HELP = {
 
 export const STAGES = { draft: 'Being set up', bench_tested: 'Tested on the desk', installed: 'Installed', live: 'Live' }
 export const ROOM_TYPES = { classroom: 'Classroom', office: 'Office', reception: 'Reception', staffroom: 'Staff room', other: 'Other' }
+// Fixed order of line types (also the order of their chart colors)
+export const TYPE_ORDER = ['lights', 'fans', 'mixed', 'ac', 'load', 'all']
 export const GROUP_TYPES = { lights: 'Lights', fans: 'Fans', mixed: 'Lights and fans', ac: 'AC', load: 'TV / smart board', all: 'Lights + fans + TV' }
 
 export const COMMAND_RESULTS = {

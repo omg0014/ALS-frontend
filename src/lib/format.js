@@ -38,3 +38,11 @@ export function changedFields(change) {
     (k) => !['_id', 'updatedAt', 'createdAt', '__v'].includes(k) && JSON.stringify(change.before[k]) !== JSON.stringify(change.after[k])
   )
 }
+
+// ON time for Analytics: "45 min", "3.5 h", "1,240 h"
+export function formatHours(h) {
+  if (!h) return '0 h'
+  if (h < 1) return `${Math.max(1, Math.round(h * 60))} min`
+  if (h < 100) return `${Math.round(h * 10) / 10} h`
+  return `${Math.round(h).toLocaleString()} h`
+}
