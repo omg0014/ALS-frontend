@@ -150,11 +150,11 @@ export function SimpleBoardForm({ initial, deviceId, onSaved, onCancel }) {
               id="sb-topic"
               value={form.commandTopic}
               autoComplete="off"
-              onChange={(e) => set({ commandTopic: e.target.value, stateTopic: form.stateTouched ? form.stateTopic : e.target.value ? `${e.target.value}/state` : '' })}
+              onChange={(e) => set({ commandTopic: e.target.value })}
             />
           </Field>
-          <Field label="State topic (optional)" hint="Where the board answers ON / OFF; empty if it doesn't">
-            <input id="sb-state" value={form.stateTopic} autoComplete="off" onChange={(e) => set({ stateTopic: e.target.value, stateTouched: true })} />
+          <Field label="State topic (optional)" hint="Only if the board's code publishes ON / OFF back, e.g. rawniee/test/r4/state. Leave empty if not sure">
+            <input id="sb-state" value={form.stateTopic} autoComplete="off" onChange={(e) => set({ stateTopic: e.target.value })} />
           </Field>
           <Field label="Message for ON">
             <input id="sb-on" value={form.onPayload} onChange={(e) => set({ onPayload: e.target.value })} />
@@ -173,7 +173,7 @@ export function SimpleBoardForm({ initial, deviceId, onSaved, onCancel }) {
         (check.ok ? (
           <Alert tone="ok">
             The broker accepts the login.
-            {form.stateTopic && (check.state ? ` The board says it is ${check.state}.` : ' The board has not reported its state yet (it does after the first ON/OFF).')}
+            {form.stateTopic && (check.state ? ` The board says it is ${check.state}.` : ' Nothing on the state topic yet. If the board\'s code never publishes there, leave State topic empty.')}
           </Alert>
         ) : (
           <Alert tone="bad">{check.error}</Alert>

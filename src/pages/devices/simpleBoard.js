@@ -1,5 +1,5 @@
-// Defaults match a board running the usual sketch: public HiveMQ, "<topic>" takes ON / OFF,
-// "<topic>/state" answers ON / OFF.
+// Defaults match a board running the usual sketch: public HiveMQ, "<topic>" takes ON / OFF.
+// No state topic by default: most sketches don't publish one, and the website would wait for a reply.
 export const SIMPLE_DEFAULTS = {
   name: '',
   room: '',
@@ -13,7 +13,6 @@ export const SIMPLE_DEFAULTS = {
   password: '',
   commandTopic: '',
   stateTopic: '',
-  stateTouched: false,
   onPayload: 'ON',
   offPayload: 'OFF',
   retain: true,
@@ -34,7 +33,6 @@ export function simpleFormFrom(device, channels) {
     username: s.username ?? '',
     commandTopic: s.commandTopic ?? '',
     stateTopic: s.stateTopic ?? '',
-    stateTouched: true,
     onPayload: s.onPayload ?? 'ON',
     offPayload: s.offPayload ?? 'OFF',
     retain: s.retain !== false,
