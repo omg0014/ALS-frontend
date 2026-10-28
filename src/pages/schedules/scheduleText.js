@@ -38,8 +38,10 @@ export function addMinutes(hhmm, min) {
   return `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`
 }
 
-// "9:00 AM – 10:00 AM" or "11:00 AM, 30 min (off 11:30 AM)"
+// "9:00 AM – 10:00 AM", "11:00 AM for 30 min (off 11:30 AM)", "OFF at 6:00 PM"
 export function slotText(slot) {
+  if (slot.kind === 'on') return `ON at ${timeText(slot.start)}`
+  if (slot.kind === 'off') return `OFF at ${timeText(slot.start)}`
   if (slot.kind === 'timer') return `${timeText(slot.start)} for ${durationText(slot.minutes)} (off ${timeText(addMinutes(slot.start, slot.minutes))})`
   return `${timeText(slot.start)} – ${timeText(slot.end)}${slot.end < slot.start ? ' (next day)' : ''}`
 }

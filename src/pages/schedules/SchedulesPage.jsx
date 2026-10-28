@@ -116,6 +116,7 @@ function ScheduleCard({ schedule: s, onEdit, onChanged }) {
   const wired = statuses.filter((x) => x.wired)
   const onCount = wired.filter((x) => x.state === 'on' || x.state === 'mixed').length
   const nextOn = s.next.find((e) => e.state === 'ON')
+  const turnsOff = s.slots.some((slot) => slot.kind !== 'on')
 
   // Manual ON/OFF for this schedule's target (floor and whole school ask first, like on Lights & fans)
   const switchNow = (state) => {
@@ -195,7 +196,7 @@ function ScheduleCard({ schedule: s, onEdit, onChanged }) {
               {onCount ? <span className="on-text">ON</span> : 'OFF'}
               {statuses.length > 1 && <span className="muted"> · {onCount} of {statuses.length} lines on</span>}
               {s.enabled && s.onNow && !onCount && nextOn && <span className="muted"> · switched off by hand, ON again {whenText(nextOn.at)}</span>}
-              {s.enabled && !s.onNow && onCount > 0 && <span className="muted"> · switched on by hand, the schedule turns it OFF at its next OFF time</span>}
+              {s.enabled && !s.onNow && onCount > 0 && turnsOff && <span className="muted"> · switched on by hand, the schedule turns it OFF at its next OFF time</span>}
             </dd>
           </>
         )}

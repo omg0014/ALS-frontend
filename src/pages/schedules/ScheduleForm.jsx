@@ -8,7 +8,18 @@ import { canControl } from '../../lib/permissions.js'
 import { Alert, Button, Field, Modal } from '../../components/ui/index.js'
 import { DAY_ORDER, DAY_PRESETS, DAY_SHORT, browserTimeZone, slotText } from './scheduleText.js'
 
-const NEW_SLOT = { range: { kind: 'range', start: '09:00', end: '10:00' }, timer: { kind: 'timer', start: '09:00', minutes: 30 } }
+const NEW_SLOT = {
+  range: { kind: 'range', start: '09:00', end: '10:00' },
+  timer: { kind: 'timer', start: '09:00', minutes: 30 },
+  on: { kind: 'on', start: '08:30' },
+  off: { kind: 'off', start: '18:00' },
+}
+const ADD_BUTTONS = [
+  ['range', 'Add a time', { start: '11:00', end: '12:00' }],
+  ['timer', 'Add a timer', { start: '11:00' }],
+  ['on', 'Add ON only', {}],
+  ['off', 'Add OFF only', {}],
+]
 
 const targetKey = (t) => (t ? `${t.kind}:${t.id ?? ''}` : '')
 const parseKey = (k) => {
@@ -63,7 +74,7 @@ export function ScheduleForm({ schedule, onClose, onSaved }) {
   return (
     <Modal
       title={schedule ? 'Change schedule' : 'New schedule'}
-      description="Turns ON at each start time and OFF again at its end, on the days you choose. Switching by hand still works at any time."
+      description="On the days you choose: ON and OFF again at its end, or just ON or just OFF at one time (e.g. everything OFF at 6 PM). Switching by hand still works at any time."
       onClose={onClose}
       wide
     >
@@ -122,19 +133,29 @@ export function ScheduleForm({ schedule, onClose, onSaved }) {
         </section>
 
         <section className="stack-sm">
-          <div className="field-label">ON times</div>
+          <div className="field-label">Times</div>
           {form.slots.map((slot, i) => (
             <div key={i} className="slot-row">
               <Field label="Kind">
                 <select aria-label={`Time ${i + 1}: kind`} value={slot.kind} onChange={(e) => setSlot(i, { ...NEW_SLOT[e.target.value], start: slot.start })}>
                   <option value="range">From … to …</option>
                   <option value="timer">Timer</option>
+                  <option value="on">Only ON at</option>
+                  <option value="off">Only OFF at</option>
                 </select>
               </Field>
-              <Field label="ON at">
-                <input type="time" aria-label={`Time ${i + 1}: ON at`} required value={slot.start} onChange={(e) => setSlot(i, { start: e.target.value })} />
+              <Field label={slot.kind === 'off' ? 'OFF at' : 'ON at'}>
+                <input
+                  type="time"
+                  aria-label={`Time ${i + 1}: ${slot.kind === 'off' ? 'OFF' : 'ON'} at`}
+                  required
+                  value={slot.start}
+                  onChange={(e) => setSlot(i, { start: e.target.value })}
+                />
               </Field>
-              {slot.kind === 'range' ? (
+              {slot.kind === 'on' || slot.kind === 'off' ? (
+                <div className="slot-note small muted">{slot.kind === 'on' ? 'Stays ON until switched off' : 'Turns everything it switches OFF'}</div>
+              ) : slot.kind === 'range' ? (
                 <Field label="OFF at">
                   <input type="time" aria-label={`Time ${i + 1}: OFF at`} required value={slot.end} onChange={(e) => setSlot(i, { end: e.target.value })} />
                 </Field>
@@ -159,16 +180,15 @@ export function ScheduleForm({ schedule, onClose, onSaved }) {
                 disabled={form.slots.length === 1}
                 onClick={() => set({ slots: form.slots.filter((_, k) => k !== i) })}
               />
-              {slot.start && (slot.kind === 'timer' ? slot.minutes > 0 : slot.end) && <div className="slot-summary small muted">{slotText(slot)}</div>}
+              {slot.start && (slot.kind === 'timer' ? slot.minutes > 0 : slot.kind === 'range' && slot.end) && <div className="slot-summary small muted">{slotText(slot)}</div>}
             </div>
           ))}
           <div className="row">
-            <Button size="sm" icon={Plus} disabled={form.slots.length >= 12} onClick={() => set({ slots: [...form.slots, { ...NEW_SLOT.range, start: '11:00', end: '12:00' }] })}>
-              Add a time
-            </Button>
-            <Button size="sm" icon={Plus} disabled={form.slots.length >= 12} onClick={() => set({ slots: [...form.slots, { ...NEW_SLOT.timer, start: '11:00' }] })}>
-              Add a timer
-            </Button>
+            {ADD_BUTTONS.map(([kind, label, patch]) => (
+              <Button key={kind} size="sm" icon={Plus} disabled={form.slots.length >= 12} onClick={() => set({ slots: [...form.slots, { ...NEW_SLOT[kind], ...patch }] })}>
+                {label}
+              </Button>
+            ))}
           </div>
         </section>
 

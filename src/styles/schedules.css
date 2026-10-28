@@ -43,11 +43,14 @@
   border: 1px solid var(--border);
 }
 .slot-summary { grid-column: 1 / -1; }
+.slot-note { align-self: center; padding-top: 22px; }
+.slot-row > .btn { grid-column: 4; }
 
 @media (max-width: 640px) {
   .slot-row { grid-template-columns: 1fr 1fr; position: relative; }
   .slot-row > .field:first-child { grid-column: 1 / -1; margin-right: 44px; }
-  .slot-row > .btn { position: absolute; top: 10px; right: 10px; }
+  .slot-row > .btn { position: absolute; top: 10px; right: 10px; grid-column: auto; }
+  .slot-note { padding-top: 0; }
   .schedule-kv { grid-template-columns: 1fr; gap: 2px 0; }
   .schedule-kv dd + dt { margin-top: 8px; }
   .day-presets { margin-left: 0; }
