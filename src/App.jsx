@@ -20,6 +20,7 @@ const WiringSheetPage = lazy(() => import('./pages/rooms/WiringSheetPage.jsx'))
 const FirmwareWizardPage = lazy(() => import('./pages/firmware/FirmwareWizardPage.jsx'))
 const NewSimpleBoardPage = lazy(() => import('./pages/devices/SimpleBoardPages.jsx'))
 const AnalyticsPage = lazy(() => import('./pages/analytics/AnalyticsPage.jsx'))
+const SchedulesPage = lazy(() => import('./pages/schedules/SchedulesPage.jsx'))
 const HardwarePage = lazy(() => import('./pages/hardware/HardwarePage.jsx'))
 const HelpPage = lazy(() => import('./pages/help/HelpPage.jsx'))
 const ActivityPage = lazy(() => import('./pages/admin/ActivityPage.jsx'))
@@ -78,6 +79,7 @@ function AppRoutes({ user }) {
       <Route path="/" element={<DashboardPage />} />
       <Route path="/control" element={<ControlPage />} />
       <Route path="/analytics" element={<AnalyticsPage />} />
+      <Route path="/schedules" element={<SchedulesPage />} />
       <Route path="/rooms" element={<RoomsPage />} />
       <Route path="/rooms/:id/install" element={<RoomInstallPage />} />
       <Route path="/rooms/:id/wiring-sheet" element={<WiringSheetPage />} />

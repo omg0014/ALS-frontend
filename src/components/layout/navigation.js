@@ -1,4 +1,4 @@
-import { Boxes, ChartColumn, CirclePlus, Code, Cpu, DoorOpen, House, LifeBuoy, Lightbulb, ScrollText, Settings, Users } from 'lucide-react'
+import { Boxes, CalendarClock, ChartColumn, CirclePlus, Code, Cpu, DoorOpen, House, LifeBuoy, Lightbulb, ScrollText, Settings, Users } from 'lucide-react'
 
 // The sidebar menu. `roles` limits who sees an item; `exclude` keeps a parent link from lighting up on a child page.
 export const NAVIGATION = [
@@ -7,6 +7,7 @@ export const NAVIGATION = [
     items: [
       { to: '/', label: 'Home', icon: House, end: true },
       { to: '/control', label: 'Lights & fans', icon: Lightbulb },
+      { to: '/schedules', label: 'Schedules', icon: CalendarClock },
       { to: '/analytics', label: 'Analytics', icon: ChartColumn },
       { to: '/rooms', label: 'Rooms', icon: DoorOpen },
       { to: '/devices', label: 'Devices', icon: Cpu, exclude: ['/devices/new'] },
